@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guess the Image — The Duel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@500;600;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-active="1" data-urgency="">
+
+  <!-- Stage backdrop -->
+  <div class="bg-stage"></div>
+  <div class="bg-glow p1"></div>
+  <div class="bg-glow p2"></div>
+  <div class="bg-glow danger"></div>
+  <div class="bg-floor"></div>
+  <div class="danger-vignette"></div>
+
+  <!-- ============ SETUP ============ -->
+  <section id="screen-setup" class="screen active">
+    <header class="title-block">
+      <div class="eyebrow">The Duel</div>
+      <h1 class="title">Guess the Image</h1>
+    </header>
+
+    <form id="setup-form" class="setup-panel" autocomplete="off">
+      <div class="players-row">
+        <label class="player-input p1">
+          <span class="player-tag">Player 1</span>
+          <input id="name1" type="text" maxlength="16" placeholder="Player 1" spellcheck="false">
+        </label>
+        <div class="vs">VS</div>
+        <label class="player-input p2">
+          <span class="player-tag">Player 2</span>
+          <input id="name2" type="text" maxlength="16" placeholder="Player 2" spellcheck="false">
+        </label>
+      </div>
+
+      <div class="setting">
+        <div class="setting-label">Time per player</div>
+        <div class="segmented" id="time-options" role="radiogroup" aria-label="Time limit">
+          <button type="button" data-time="30">30<span>s</span></button>
+          <button type="button" data-time="45" class="selected">45<span>s</span></button>
+          <button type="button" data-time="60">60<span>s</span></button>
+        </div>
+      </div>
+
+      <div class="setting">
+        <div class="setting-label">Category</div>
+        <div class="category-display">
+          <div id="category-name" class="category-name">—</div>
+          <div id="category-count" class="category-count"></div>
+        </div>
+        <input id="category-slider" type="range" min="0" max="0" step="1" value="0" aria-label="Category">
+        <div id="category-ticks" class="category-ticks"></div>
+      </div>
+
+      <div class="setting-row">
+        <label class="toggle"><input id="sound-toggle" type="checkbox" checked><span>Sound effects</span></label>
+        <button type="button" id="fullscreen-btn" class="link-btn">⛶ Fullscreen</button>
+      </div>
+
+      <button type="submit" id="start-btn" class="start-btn">Start the Duel</button>
+      <div id="setup-error" class="setup-error"></div>
+      <div class="hint"><kbd>Enter</kbd> to start &nbsp;·&nbsp; During the duel: <kbd>Space</kbd> when the answer is said correctly, <kbd>P</kbd> to pass</div>
+    </form>
+  </section>
+
+  <!-- ============ GAME ============ -->
+  <section id="screen-game" class="screen">
+    <div class="game-top">
+      <div class="category-badge">
+        <span>Category</span>
+        <strong id="game-category">—</strong>
+      </div>
+
+      <div class="turn-hero">
+        <div class="turn-label">Now playing</div>
+        <div id="turn-name" class="turn-name">Player 1</div>
+        <div id="big-timer" class="big-timer">45</div>
+      </div>
+
+      <div class="images-left">
+        <strong id="images-left">0</strong>
+        <span>images left</span>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="image-frame" id="image-frame">
+        <img id="game-image" alt="" draggable="false">
+        <div id="reveal" class="reveal" aria-live="polite">
+          <div id="reveal-check" class="reveal-check">✓ Correct</div>
+          <div id="reveal-answer" class="reveal-answer"></div>
+          <div class="reveal-next"><span id="reveal-next-label">Next up:</span> <strong id="reveal-next-name"></strong></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="status-row">
+      <div class="status-card p1" id="card-1">
+        <div class="status-turn">Your turn</div>
+        <div class="status-name" id="status-name-1">Player 1</div>
+        <div class="status-time" id="status-time-1">45</div>
+      </div>
+      <div class="status-card p2" id="card-2">
+        <div class="status-turn">Your turn</div>
+        <div class="status-name" id="status-name-2">Player 2</div>
+        <div class="status-time" id="status-time-2">45</div>
+      </div>
+    </div>
+
+    <div class="game-hint"><kbd>Space</kbd> correct &nbsp;·&nbsp; <kbd>P</kbd> pass (clock keeps running) &nbsp;·&nbsp; <kbd>Esc</kbd> quit</div>
+  </section>
+
+  <!-- ============ RESULTS ============ -->
+  <section id="screen-results" class="screen">
+    <div id="result-eyebrow" class="result-eyebrow">Winner</div>
+    <div id="result-name" class="result-name">Player 1</div>
+    <div id="result-sub" class="result-sub"></div>
+
+    <div class="result-cards">
+      <div class="result-card p1" id="result-card-1">
+        <div class="rc-name" id="result-name-1">Player 1</div>
+        <div class="rc-time" id="result-time-1">0.0s</div>
+        <div class="rc-label">time remaining</div>
+      </div>
+      <div class="result-card p2" id="result-card-2">
+        <div class="rc-name" id="result-name-2">Player 2</div>
+        <div class="rc-time" id="result-time-2">0.0s</div>
+        <div class="rc-label">time remaining</div>
+      </div>
+    </div>
+
+    <div class="result-actions">
+      <button type="button" id="rematch-btn" class="btn btn-primary">Rematch <kbd>Space</kbd></button>
+      <button type="button" id="setup-btn" class="btn btn-ghost">Change setup <kbd>Esc</kbd></button>
+    </div>
+  </section>
+
+  <!-- ============ OVERLAYS ============ -->
+  <div id="intro" class="overlay">
+    <div class="intro-eyebrow">First up</div>
+    <div id="intro-name" class="intro-name">Player 1</div>
+    <div id="intro-count" class="intro-count">3</div>
+  </div>
+
+  <div id="timesup" class="overlay timesup">
+    <div class="timesup-text">Time's up!</div>
+    <div id="timesup-name" class="timesup-name"></div>
+  </div>
+
+  <div id="confetti" class="confetti"></div>
+
+  <script src="images.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
