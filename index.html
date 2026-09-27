@@ -59,7 +59,12 @@
       </div>
 
       <div class="setting-row">
-        <label class="toggle"><input id="sound-toggle" type="checkbox" checked><span>Sound effects</span></label>
+        <div class="toggles">
+          <label class="toggle"><input id="sound-toggle" type="checkbox" checked><span>Sound effects</span></label>
+          <label class="toggle" title="Shows the current answer in the browser tab title, for whoever is judging. Chrome's &quot;share a tab&quot; does not capture the tab strip, so players watching a shared tab never see it.">
+            <input id="answer-toggle" type="checkbox" checked><span>Answer in tab title</span>
+          </label>
+        </div>
         <button type="button" id="fullscreen-btn" class="link-btn">⛶ Fullscreen</button>
       </div>
 

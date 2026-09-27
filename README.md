@@ -37,6 +37,21 @@ file name and folder name (`images/food/hot_dog.jpg` → "Hot Dog" / "Food").
 - The first clock to hit 0 loses. If every image in the category is used up
   first, the player with the most time left wins.
 
+## The moderator's answer key
+
+Whoever is judging needs to know the answer without the players seeing it, so
+the current answer is also put in the **browser tab title** (toggle it off on
+the setup screen). Hover the tab to see the full text if it is truncated.
+
+This works because Chrome's **"share a tab"** captures only the page, never the
+tab strip — so players watching the shared tab never see the title. Two things
+to watch for:
+
+- Sharing a **whole screen or window** *does* include the tab strip. Share the
+  tab, not the screen.
+- **Fullscreen hides the tab strip**, from the moderator too. Use fullscreen
+  only when nobody needs the answer key.
+
 ## Keys
 
 | Key       | When            | Does                                  |

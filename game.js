@@ -18,6 +18,7 @@
   const DANGER_AT_S     = 10;    // timer turns red and pulses at/below this
   const TICK_FROM_S     = 5;     // audible tick for each of the last N seconds
   const ALL_CATEGORIES  = 'All Categories';
+  const TITLE_BASE      = 'Guess the Image';  // tab title when no answer is being shown
   const TIME_OPTIONS    = [30, 45, 60];
 
   // ---------- Image data ----------
@@ -63,7 +64,7 @@
     form: $('setup-form'), name1: $('name1'), name2: $('name2'),
     timeOptions: $('time-options'), slider: $('category-slider'),
     categoryName: $('category-name'), categoryCount: $('category-count'), ticks: $('category-ticks'),
-    soundToggle: $('sound-toggle'), fullscreenBtn: $('fullscreen-btn'),
+    soundToggle: $('sound-toggle'), answerToggle: $('answer-toggle'), fullscreenBtn: $('fullscreen-btn'),
     startBtn: $('start-btn'), setupError: $('setup-error'),
     // game
     gameCategory: $('game-category'), imagesLeft: $('images-left'),
@@ -88,7 +89,7 @@
   // ---------- State ----------
   const state = {
     phase: 'setup',            // setup | intro | playing | pass | reveal | switching | ending | results
-    settings: { name1: '', name2: '', time: 45, category: '', sound: true },
+    settings: { name1: '', name2: '', time: 45, category: '', sound: true, answerInTitle: true },
     players: [],               // [{ name, remainingMs }, { name, remainingMs }]
     active: 0,                 // index of the player whose clock is running
     turnStartedAt: 0,          // performance.now() when the active clock last started
@@ -163,6 +164,16 @@
 
   const playerColor = i => i === 0 ? 'var(--p1)' : 'var(--p2)';
 
+  // The answer key for whoever is judging. It goes in the tab title because Chrome's
+  // "share a tab" captures only the page, never the tab strip — so a player watching
+  // the shared tab cannot see it. Note it IS visible when sharing a whole screen or
+  // window, and it is hidden from the moderator too while the page is fullscreen.
+  function setTabAnswer(answer) {
+    document.title = (answer && state.settings.answerInTitle)
+      ? `${answer} \u00b7 ${TITLE_BASE}`   // answer first: a narrow tab truncates the end
+      : `${TITLE_BASE} \u2014 The Duel`;
+  }
+
   // ---------- Settings persistence (nice-to-have; failures are ignored) ----------
   const STORAGE_KEY = 'guess-the-image-duel';
   function loadSettings() {
@@ -172,6 +183,7 @@
       if (saved.name2) els.name2.value = saved.name2;
       if (TIME_OPTIONS.includes(saved.time)) selectTime(saved.time);
       if (typeof saved.sound === 'boolean') els.soundToggle.checked = saved.sound;
+      if (typeof saved.answerInTitle === 'boolean') els.answerToggle.checked = saved.answerInTitle;
       const idx = CATEGORIES.indexOf(saved.category);
       if (idx >= 0) els.slider.value = idx;
     } catch { /* ignore */ }
@@ -228,6 +240,7 @@
       time: selectedTime(),
       category: CATEGORIES[Number(els.slider.value)],
       sound: els.soundToggle.checked,
+      answerInTitle: els.answerToggle.checked,
     };
     saveSettings();
     sound.unlock(); // first user gesture unlocks audio
@@ -300,6 +313,7 @@
   function nextImage() {
     if (state.pool.length === 0) return false;
     state.current = state.pool.pop();
+    setTabAnswer(state.current.answer);
     els.image.src = state.current.src;
     els.image.alt = '';                // never leak the answer
     retrigger(els.image, 'swap');
@@ -434,6 +448,7 @@
 
   function showResults() {
     state.phase = 'results';
+    setTabAnswer(null);
     state.resultsUnlocked = false;
     document.body.dataset.urgency = '';
     els.timesUp.classList.remove('show');
@@ -482,6 +497,7 @@
     document.body.dataset.urgency = '';
     document.body.dataset.active = '1';
     state.phase = 'setup';
+    setTabAnswer(null);
     showScreen('screen-setup');
     renderCategory();
     els.name1.focus();

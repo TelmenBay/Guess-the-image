@@ -224,6 +224,7 @@ input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 8px 
 .category-ticks span.on { background: var(--gold); box-shadow: 0 0 8px rgba(255, 209, 102, 0.6); }
 
 .setting-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.toggles { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
 .toggle { display: inline-flex; align-items: center; gap: 10px; color: var(--muted); font-weight: 600; cursor: pointer; }
 .toggle input { width: 18px; height: 18px; accent-color: var(--gold); cursor: pointer; }
 .link-btn {
