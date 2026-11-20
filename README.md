@@ -29,9 +29,10 @@ file name and folder name (`images/food/hot_dog.jpg` → "Hot Dog" / "Food").
 - Player 1 sees an image; their clock runs. When they say the answer
   correctly, press **Space**: their clock freezes, the answer is shown for a
   moment, then the next image appears and Player 2's clock starts.
-- Press **P** to pass: the answer is shown briefly, then the same player gets
-  a new image. Their clock keeps running the whole time, so a pass costs about
-  a second. You can't pass on the last remaining image.
+- Press **P** to pass: 2 seconds are taken off that player's clock, the answer
+  is shown briefly (clock frozen), then the same player gets a new image. A
+  pass with less than 2 seconds left runs the clock out and loses. You can't
+  pass on the last remaining image.
 - Space and P do nothing during the answer reveal, a pass, or the switch.
 - Images are shuffled each game and never repeat within a game.
 - The first clock to hit 0 loses. If every image in the category is used up
@@ -58,7 +59,7 @@ to watch for:
 |-----------|-----------------|---------------------------------------|
 | `Enter`   | Setup           | Start the duel                        |
 | `Space`   | During a turn   | Mark the current image as answered    |
-| `P`       | During a turn   | Pass — new image, clock keeps running |
+| `P`       | During a turn   | Pass — new image, costs 2 seconds     |
 | `Space`   | Results         | Rematch with the same settings        |
 | `Esc`     | Anywhere in game| Back to setup                         |
 | `F`       | During the game | Toggle fullscreen                     |
