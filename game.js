@@ -8,7 +8,8 @@
 
   // ---------- Tunables ----------
   const REVEAL_MS       = 1500;  // how long the correct answer stays on screen before switching
-  const PASS_MS         = 900;   // how long the PASS card shows; the player's clock keeps running throughout
+  const PASS_MS         = 900;   // how long the PASS card shows; the player's clock is frozen meanwhile
+  const PASS_PENALTY_MS = 2000;  // time taken off the player's clock for each pass
   const INTRO_COUNT     = 3;     // 3-2-1 countdown before Player 1's first turn
   const INTRO_STEP_MS   = 800;
   const GO_MS           = 450;   // how long "GO!" stays up before the timer starts
@@ -333,7 +334,7 @@
   }
 
   const activeRemaining = () => state.players[state.active].remainingMs - (performance.now() - state.turnStartedAt);
-  const CLOCK_RUNNING = new Set(['playing', 'pass']);   // phases during which the active clock ticks down
+  const CLOCK_RUNNING = new Set(['playing']);   // phases during which the active clock ticks down
 
   // The rAF loop below drives the display, but rAF pauses in a hidden tab.
   // A plain timeout guarantees the clock still hits zero on time.
@@ -407,19 +408,34 @@
   }
   function hideReveal() { els.reveal.classList.remove('show'); }
 
-  // P pressed: skip this image. Same player, next image, and the clock never stops.
+  // P pressed: skip this image. Same player, next image, minus a flat PASS_PENALTY_MS.
+  // The clock is frozen while the PASS card shows, so a pass costs exactly the penalty.
   function passImage() {
     if (state.phase !== 'playing') return;
     if (checkTimeout()) return;
     if (state.pool.length === 0) return;   // nothing left to swap to
-    state.phase = 'pass';                  // Space/P blocked; rAF + deadline keep the clock running
+    const p = state.players[state.active];
+
+    // Freeze the clock and take the penalty.
+    p.remainingMs = activeRemaining() - PASS_PENALTY_MS;
+    cancelAnimationFrame(rafId); rafId = null;
+    disarmDeadline();
+    if (p.remainingMs <= 0) {              // the penalty used up the last of their time
+      p.remainingMs = 0;
+      renderTimers();
+      endGame('timeout');
+      return;
+    }
+    state.phase = 'pass';                  // Space/P blocked
+    renderTimers();
     sound.pass();
-    showCard('pass', '✕ Pass', state.current.answer, 'Still your turn,', state.active);
+    showCard('pass', `✕ Pass −${PASS_PENALTY_MS / 1000}s`, state.current.answer, 'Still your turn,', state.active);
     later(() => {
       if (state.phase !== 'pass') return;
       hideReveal();
       nextImage();
-      const go = () => { if (state.phase === 'pass') state.phase = 'playing'; };
+      // Restart the clock once the new image is painted, same as a normal turn switch.
+      const go = () => { if (state.phase === 'pass') startTurn(); };
       if (els.image.decode) els.image.decode().then(go, go); else go();
     }, PASS_MS);
   }
