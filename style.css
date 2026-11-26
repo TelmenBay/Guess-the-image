@@ -232,6 +232,7 @@ input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 8px 
   padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: all 0.15s;
 }
 .link-btn:hover { color: #fff; border-color: rgba(255, 255, 255, 0.3); }
+.setup-buttons { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 
 .start-btn {
   font-family: var(--display); font-size: clamp(1.8rem, 4.5vh, 2.8rem); letter-spacing: 0.12em; text-transform: uppercase;

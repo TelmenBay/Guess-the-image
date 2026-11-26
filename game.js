@@ -66,6 +66,7 @@
     timeOptions: $('time-options'), slider: $('category-slider'),
     categoryName: $('category-name'), categoryCount: $('category-count'), ticks: $('category-ticks'),
     soundToggle: $('sound-toggle'), answerToggle: $('answer-toggle'), fullscreenBtn: $('fullscreen-btn'),
+    hostBtn: $('host-btn'),
     startBtn: $('start-btn'), setupError: $('setup-error'),
     // game
     gameCategory: $('game-category'), imagesLeft: $('images-left'),
@@ -165,15 +166,82 @@
 
   const playerColor = i => i === 0 ? 'var(--p1)' : 'var(--p2)';
 
-  // The answer key for whoever is judging. It goes in the tab title because Chrome's
-  // "share a tab" captures only the page, never the tab strip — so a player watching
-  // the shared tab cannot see it. Note it IS visible when sharing a whole screen or
-  // window, and it is hidden from the moderator too while the page is fullscreen.
-  function setTabAnswer(answer) {
-    document.title = (answer && state.settings.answerInTitle)
-      ? `${answer} \u00b7 ${TITLE_BASE}`   // answer first: a narrow tab truncates the end
-      : `${TITLE_BASE} \u2014 The Duel`;
+  // ---------- Answer key (for whoever is judging) ----------
+  // Two places, neither of which the players see:
+  //  1. The tab title. Chrome's "share a tab" captures only the page, never the tab
+  //     strip. It IS visible when sharing a whole screen or window, and fullscreen
+  //     hides it from the moderator too.
+  //  2. The answer window: a small window of its own. A shared tab never captures other
+  //     windows, and with the TV as a second display it can sit on the laptop screen.
+  //     Chrome/Edge open it as a Picture-in-Picture window, which floats above
+  //     everything, including this page in fullscreen. Other browsers get a popup.
+  let keyAnswer = null;   // answer of the image on screen, or null between games
+  let hostWin = null;     // the answer window, while it is open
+
+  function setAnswerKey(answer) {
+    keyAnswer = answer || null;
+    document.title = (keyAnswer && state.settings.answerInTitle)
+      ? `${keyAnswer} · ${TITLE_BASE}`   // answer first: a narrow tab truncates the end
+      : `${TITLE_BASE} — The Duel`;
+    renderHost();
   }
+
+  const HOST_CSS = `
+    html, body { height: 100%; margin: 0; }
+    body {
+      box-sizing: border-box; padding: 12px 16px; overflow: hidden; color-scheme: dark;
+      display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 6px;
+      text-align: center; background: #05070f; color: #f4f6ff;
+      font-family: 'Oswald', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    }
+    .label { font: 600 11px/1 system-ui, sans-serif; letter-spacing: 0.25em; text-transform: uppercase; color: #8b93b8; }
+    .answer { font-weight: 600; font-size: clamp(20px, min(10vw, 26vh), 64px); line-height: 1.1; overflow-wrap: anywhere; color: #ffd166; }
+    .meta { font: 600 13px/1.2 system-ui, sans-serif; color: #3ee0ff; }
+    body[data-active="2"] .meta { color: #ff8a3d; }
+    body.idle .answer, body.idle .meta { color: #8b93b8; }
+  `;
+
+  const hostIsOpen = () => !!hostWin && !hostWin.closed;
+
+  async function openHostWindow() {
+    if (hostIsOpen()) { hostWin.focus(); return; }
+    let win = null;
+    if (window.documentPictureInPicture) {
+      try { win = await window.documentPictureInPicture.requestWindow({ width: 380, height: 170 }); }
+      catch { win = null; }
+    }
+    if (!win) win = window.open('', 'guess-the-image-answers', 'popup,width=420,height=220');
+    if (!win) return;   // popup blocked
+
+    const d = win.document;
+    d.title = 'Answer key';
+    d.head.innerHTML = '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@600&display=swap">';
+    const style = d.createElement('style');
+    style.textContent = HOST_CSS;
+    d.head.appendChild(style);
+    d.body.innerHTML = '<div class="label">Answer</div><div id="answer" class="answer"></div><div id="meta" class="meta"></div>';
+    // Keys pressed while the answer window has focus still drive the game.
+    d.addEventListener('keydown', onKey);
+    win.addEventListener('pagehide', () => { if (hostWin === win) hostWin = null; });
+    hostWin = win;
+    renderHost();
+  }
+
+  function renderHost() {
+    if (!hostIsOpen()) return;
+    const d = hostWin.document;
+    const answerEl = d.getElementById('answer'), metaEl = d.getElementById('meta');
+    if (!answerEl || !metaEl) return;
+    answerEl.textContent = keyAnswer || '—';
+    metaEl.textContent = keyAnswer
+      ? `${state.players[state.active].name} · ${state.settings.category}`
+      : 'No image on screen';
+    d.body.classList.toggle('idle', !keyAnswer);
+    d.body.dataset.active = String(state.active + 1);
+  }
+
+  els.hostBtn.addEventListener('click', openHostWindow);
+  window.addEventListener('pagehide', () => { if (hostIsOpen()) hostWin.close(); });
 
   // ---------- Settings persistence (nice-to-have; failures are ignored) ----------
   const STORAGE_KEY = 'guess-the-image-duel';
@@ -314,7 +382,7 @@
   function nextImage() {
     if (state.pool.length === 0) return false;
     state.current = state.pool.pop();
-    setTabAnswer(state.current.answer);
+    setAnswerKey(state.current.answer);
     els.image.src = state.current.src;
     els.image.alt = '';                // never leak the answer
     retrigger(els.image, 'swap');
@@ -464,7 +532,7 @@
 
   function showResults() {
     state.phase = 'results';
-    setTabAnswer(null);
+    setAnswerKey(null);
     state.resultsUnlocked = false;
     document.body.dataset.urgency = '';
     els.timesUp.classList.remove('show');
@@ -513,7 +581,7 @@
     document.body.dataset.urgency = '';
     document.body.dataset.active = '1';
     state.phase = 'setup';
-    setTabAnswer(null);
+    setAnswerKey(null);
     showScreen('screen-setup');
     renderCategory();
     els.name1.focus();
@@ -561,7 +629,8 @@
   function clearConfetti() { els.confetti.innerHTML = ''; }
 
   // ---------- Global keys ----------
-  document.addEventListener('keydown', e => {
+  // Also attached to the answer window, so the game works whichever window has focus.
+  function onKey(e) {
     const isSpace = e.code === 'Space' || e.key === ' ';
     if (isSpace) {
       if (state.phase === 'setup') return;      // let people type spaces in their names
@@ -583,8 +652,13 @@
     }
     if ((e.key === 'f' || e.key === 'F') && state.phase !== 'setup') {
       toggleFullscreen();
+      return;
     }
-  });
+    if ((e.key === 'h' || e.key === 'H') && state.phase !== 'setup') {
+      openHostWindow();
+    }
+  }
+  document.addEventListener('keydown', onKey);
 
   els.rematchBtn.addEventListener('click', rematch);
   els.setupBtn.addEventListener('click', goToSetup);

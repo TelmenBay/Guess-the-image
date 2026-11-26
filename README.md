@@ -40,9 +40,29 @@ file name and folder name (`images/food/hot_dog.jpg` → "Hot Dog" / "Food").
 
 ## The moderator's answer key
 
-Whoever is judging needs to know the answer without the players seeing it, so
-the current answer is also put in the **browser tab title** (toggle it off on
-the setup screen). Hover the tab to see the full text if it is truncated.
+Whoever is judging needs to know the answer without the players seeing it.
+There are two ways:
+
+**Answer window** (works in fullscreen). Click **🔑 Answer window** on the setup
+screen, or press **H** during a duel. A small window opens that shows the current
+answer and whose turn it is. In Chrome and Edge it is a floating
+picture-in-picture window that stays on top of everything, including the game in
+fullscreen. Other browsers open a normal popup instead. Keep it off the screen
+the players are watching:
+
+- **Sharing a tab** (Meet, Zoom, Discord…): other windows are never captured, so
+  the answer window can sit right on top of the game.
+- **TV as a second display**: put the game fullscreen on the TV and drag the
+  answer window to the laptop screen.
+- **Laptop screen mirrored to the TV**: everything on the laptop is on the TV
+  too, so the answer window would be visible. Switch the display to *extend*
+  instead of mirror.
+
+Space, P, Esc and F still work while the answer window has focus.
+
+**Tab title.** The current answer is also put in the **browser tab title**
+(toggle it off on the setup screen). Hover the tab to see the full text if it is
+truncated.
 
 This works because Chrome's **"share a tab"** captures only the page, never the
 tab strip — so players watching the shared tab never see the title. Two things
@@ -50,8 +70,8 @@ to watch for:
 
 - Sharing a **whole screen or window** *does* include the tab strip. Share the
   tab, not the screen.
-- **Fullscreen hides the tab strip**, from the moderator too. Use fullscreen
-  only when nobody needs the answer key.
+- **Fullscreen hides the tab strip**, from the moderator too. Use the answer
+  window when playing fullscreen.
 
 ## Keys
 
@@ -63,6 +83,7 @@ to watch for:
 | `Space`   | Results         | Rematch with the same settings        |
 | `Esc`     | Anywhere in game| Back to setup                         |
 | `F`       | During the game | Toggle fullscreen                     |
+| `H`       | During the game | Open the answer window                |
 
 ## Tuning
 
